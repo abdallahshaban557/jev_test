@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:a2ui_core/a2ui_core.dart' as a2ui;
 import 'package:genui/genui.dart';
+import 'package:flutter/foundation.dart';
 
 import 'jev_ui_selector.dart';
 import 'orders.dart';
@@ -56,14 +57,19 @@ class JevGenUiProvider {
           });
           return;
         }
-        final intent = switch (action['name']) {
-          'view_order' => 'Show details',
-          'track_order' => 'Track delivery',
-          'return_order' => 'Start a return',
+        final ui = switch (action['name']) {
+          'view_order' => SupportUi.orderDetails,
+          'track_order' => SupportUi.tracking,
+          'return_order' => SupportUi.returnForm,
           _ => throw const FormatException('Unknown action'),
         };
-        selectedOrder = id;
-        prompt = '$intent for order #$id';
+        prompt = '${ui.title} for order #$id';
+        onRequest(prompt);
+        if (kDebugMode) {
+          debugPrint('[Order action] ui=${ui.name} order=$id source=button');
+        }
+        _showSelection(prompt, UiSelection(ui, id));
+        return;
       }
       if (apiKey().trim().isEmpty) throw StateError('missing-api-key');
       onRequest(prompt);
@@ -75,18 +81,22 @@ class JevGenUiProvider {
         selectedOrder: selectedOrder,
       );
       if (_disposed) return;
-      selectedOrder = selection.orderId;
-      history.addAll([
-        {'role': 'user', 'content': prompt},
-        {
-          'role': 'assistant',
-          'content': '${selection.ui.name}: ${selection.orderId ?? 'none'}',
-        },
-      ]);
-      _emit(selection.ui.component, selection.orderId, selection.ui.title, {});
+      _showSelection(prompt, selection);
     } finally {
       _busy = false;
     }
+  }
+
+  void _showSelection(String prompt, UiSelection selection) {
+    selectedOrder = selection.orderId;
+    history.addAll([
+      {'role': 'user', 'content': prompt},
+      {
+        'role': 'assistant',
+        'content': '${selection.ui.name}: ${selection.orderId ?? 'none'}',
+      },
+    ]);
+    _emit(selection.ui.component, selection.orderId, selection.ui.title, {});
   }
 
   void _emit(

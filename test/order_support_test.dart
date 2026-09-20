@@ -156,6 +156,83 @@ void main() {
     },
   );
 
+  for (final action in [
+    ('view_order', SupportUi.orderDetails),
+    ('track_order', SupportUi.tracking),
+    ('return_order', SupportUi.returnForm),
+  ]) {
+    testWidgets('${action.$1} opens the requested UI without calling Jev', (
+      tester,
+    ) async {
+      final selector = FixedSelector(
+        const UiSelection(SupportUi.supportHelp, null),
+      );
+      final vm = SupportViewModel(
+        selector: selector,
+      ); // No API key is needed for a known action.
+      await tester.pumpWidget(
+        MaterialApp(home: OrderSupportPage(viewModel: vm)),
+      );
+      await vm.conversation.sendRequest(
+        ChatMessage.user(
+          '',
+          parts: [
+            UiInteractionPart.create(
+              jsonEncode({
+                'action': {
+                  'name': action.$1,
+                  'context': {'orderId': '1042'},
+                },
+              }),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(selector.calls, 0);
+      expect(vm.error, isNull);
+      expect(vm.provider.selectedOrder, '1042');
+      expect(vm.provider.history.last['content'], '${action.$2.name}: 1042');
+      final id = vm.entries.last.surfaceId!;
+      final root = vm.controller
+          .contextFor(id)
+          .definition
+          .value!
+          .components['root']!;
+      expect(root.type, action.$2.component);
+      expect(root.properties['orderId'], '1042');
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      vm.dispose();
+    });
+  }
+
+  testWidgets(
+    'start return button skips order lookup and a second model call',
+    (tester) async {
+      final selector = FixedSelector(
+        const UiSelection(SupportUi.orderDetails, '1042'),
+      );
+      final vm = SupportViewModel(selector: selector)..apiKey = 'fake';
+      await tester.pumpWidget(
+        MaterialApp(home: OrderSupportPage(viewModel: vm)),
+      );
+      await vm.send('Show my backpack');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Start a return'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Start a return'));
+      await tester.pumpAndSettle();
+      expect(selector.calls, 1);
+      expect(find.text('Let’s make this right.'), findsOneWidget);
+      expect(find.text('Which order is this about?'), findsNothing);
+      expect(vm.error, isNull);
+      await tester.pumpWidget(const SizedBox());
+      vm.dispose();
+    },
+  );
+
   testWidgets('unknown order asks for a selection', (tester) async {
     final vm = SupportViewModel(
       selector: FixedSelector(const UiSelection(SupportUi.returnForm, null)),

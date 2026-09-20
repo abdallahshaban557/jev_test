@@ -52,7 +52,7 @@ the key. Production credentials belong on your backend.
    arbitrary model-generated widgets or a second LLM.
 4. GenUI renders a `Surface` using the custom support catalog: order list,
    order details, tracking, return form, return policy, and help.
-5. Buttons dispatch GenUI `UserActionEvent`s. Navigation goes back through Jev.
+5. Buttons dispatch GenUI `UserActionEvent`s. Explicit order buttons open their known screen and order directly, without another Jev call.
    Explicit return submission validates eligibility and the reason locally,
    then emits a confirmation surface. Model text cannot execute a return.
 
@@ -79,3 +79,21 @@ orders, return eligibility, and form-to-confirmation events using mock model
 responses. Live Jev selection quality requires a valid API key.
 
 Package docs: https://pub.dev/packages/genui and https://pub.dev/packages/jev_dart
+
+## Selection diagnostics and live checks
+
+Debug builds log only validated UI/order labels and confidence values with the
+`[Jev selection]` prefix. Direct button navigation logs `[Order action]`.
+No prompts, raw responses, or API keys are logged by these diagnostics.
+
+Run the opt-in live selection checks with the key in `jev.local.json`:
+
+```sh
+flutter test test/live/jev_selection_test.dart --dart-define=RUN_LIVE_JEV=true
+```
+
+This sends seven synthetic prompts to Jev and checks product-name returns,
+explicit and unknown IDs, missing order references, follow-ups, and policy
+questions. It uses API quota but never submits a return. Normal `flutter test`
+runs skip live API checks. Model results may change; the live test verifies
+selection quality separately from deterministic widget tests.
