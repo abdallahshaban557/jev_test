@@ -1,11 +1,11 @@
 {
-    "name": "Jev Choices",
-    "short_name": "Jev Choices",
+    "name": "Jev Order Support",
+    "short_name": "Jev Order Support",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A chat that uses Jev to choose Stripe, PostHog, or Clerk.",
+    "description": "Order support with Jev UI selection and GenUI interactive cards.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
