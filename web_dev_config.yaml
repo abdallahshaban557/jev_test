@@ -1,0 +1,6 @@
+server:
+  host: "127.0.0.1"
+  proxy:
+    - target: "https://api.typesafe.ai"
+      regex: "^/api/v1/systemone$"
+      replace: "/v1/systemone"

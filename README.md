@@ -8,12 +8,15 @@ It returns a selection only. It does not connect to or perform actions in those 
 
 ```sh
 flutter pub get
-flutter run -d macos
+flutter run -d chrome
 ```
 
-Native Android/iOS/macOS builds call Jev directly.
-The Python preview server has been removed. The browser version still targets
-`/api/v1/systemone` and requires a backend at that path to make Jev requests.
+Chrome debug uses Flutter's built-in development proxy, configured in
+`web_dev_config.yaml`is needed. Fully stop and restart `flutter run` after changing this configuration;
+hot reload does not reload development server settings.
+Native Android/iOS/macOS builds call Jev directly (for example, `flutter run -d macos`).
+A published web build still requires a backend at `/api/v1/systemone` because
+Flutter's development proxy is only available during development.
 Paste your Jev / TypeSafe API key into the app, type a question, and send it.
 The key is held in memory only and is not saved. Example prompts fill the composer.
 
