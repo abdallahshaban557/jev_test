@@ -97,3 +97,20 @@ explicit and unknown IDs, missing order references, follow-ups, and policy
 questions. It uses API quota but never submits a return. Normal `flutter test`
 runs skip live API checks. Model results may change; the live test verifies
 selection quality separately from deterministic widget tests.
+
+## Widget previews
+
+Open `lib/order_support/support_previews.dart` in VS Code and open the Flutter
+Widget Preview panel. Disable **Filter previews by selected file** to keep all
+previews visible while editing other files. Alternatively, run:
+
+```sh
+flutter widget-preview start
+```
+
+The preview gallery includes every order catalog widget, the return order chooser,
+an already-saved return, and the full chat page, each at phone and desktop sizes.
+Card previews use independent sample data and support local button navigation and
+demo returns without a Jev API key. Reset a preview to restore its initial state.
+The full chat page shows the app's initial state; sending free-text requests still
+requires a key. Previews share the running app's theme.
